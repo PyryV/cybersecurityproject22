@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Top Secret Storage</title>
+    </head>
+    <body>
+        <h1>Top Secret Storage</h1>
+        <form action="/secretsmanager/login/" method="POST">
+            {% csrf_token %}
+            <p>Username: <input type="text" name="username"/></p>
+            <p>Password: <input type="password" name="password"/></p>
+            <p><input type="submit" value="Login"></p>
+        </form>
+    </body>
+</html>

@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render
-
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from secretsmanager.models import Secret, UserClearanceLevel
 
 def getSecrets(user):
@@ -21,7 +22,7 @@ def addSecret(request):
             secret = request.POST.get('secret')
         )
         new_secret.save()
-    return redirect('secretsmanager/')
+    return redirect('/secretsmanager/')
 
 def secretView(request, id):
     if request.method == 'GET':
@@ -32,6 +33,22 @@ def secretView(request, id):
 def newSecretView(request):
     return render(request, 'newSecret.html')
 
+def logoutView(request):
+    logout(request)
+    return redirect('/secretsmanager/')
+
+def loginView(request):
+    if request.method == 'GET':
+        return render(request, 'login.html')
+    elif request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('/secretsmanager/')
+
+@login_required(login_url='/secretsmanager/login/')
 def homePageView(request):
     if request.method == 'GET':
         user = request.user
