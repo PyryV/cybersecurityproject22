@@ -6,7 +6,6 @@ from secretsmanager.models import Secret, UserClearanceLevel
 
 def getSecrets(user):
     print(user.id)
-    clearance_level = UserClearanceLevel.objects.get(user_id=str(user.id))['clearancelevel']
     clearance_level = 'TOP_SECRET'
     if clearance_level == 'TOP_SECRET':
         return Secret.objects.all()
@@ -14,6 +13,9 @@ def getSecrets(user):
         return Secret.objects.exclude(classification='TOP_SECRET')
     else:
         return Secret.objects.filter(classification='PUBLIC')
+
+def getClearanceLevel(user_id):
+    return UserClearanceLevel.objects.filter(user_id=user_id)['clearanceLevel']
 
 def addSecret(request):
     if request.method == 'POST':
@@ -28,6 +30,8 @@ def addSecret(request):
 def secretView(request, id):
     if request.method == 'GET':
         #secret = Secret.objects.get(id=id)
+        #if secret.classification != getClearanceLevel(request.user['id']):
+        #    return redirect('/secretsmanager/')
         #context = {'secret': secret}
         conn = sqlite3.connect('db.sqlite3')
         cursor = conn.cursor()
