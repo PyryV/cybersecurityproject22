@@ -3,9 +3,11 @@ from django.contrib.auth.models import User
 from django_cryptography.fields import encrypt
 
 class Secret(models.Model):
-    title = encrypt(models.TextField())
+    #title = encrypt(models.TextField())
+    title = models.TextField()
     classification = models.TextField()
-    secret = encrypt(models.TextField())
+    #secret = encrypt(models.TextField())
+    secret = models.TextField()
 
 class UserClearanceLevel(models.Model):
     user_id = models.TextField()
