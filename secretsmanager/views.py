@@ -6,7 +6,7 @@ from secretsmanager.models import Secret, UserClearanceLevel
 
 def getSecrets(user):
     print(user.id)
-    clearance_level = 'TOP_SECRET'
+    clearance_level = getClearanceLevel(user.id)
     if clearance_level == 'TOP_SECRET':
         return Secret.objects.all()
     elif clearance_level == 'CLASSIFIED':
@@ -15,8 +15,13 @@ def getSecrets(user):
         return Secret.objects.filter(classification='PUBLIC')
 
 def getClearanceLevel(user_id):
-    return UserClearanceLevel.objects.filter(user_id=user_id)['clearanceLevel']
+    if user_id is not None:
+        cl = UserClearanceLevel.objects.get(user_id=user_id)
+        print(cl.clearanceLevel)
+        return cl.clearanceLevel
+    else: return 'USER_IS_NOT_LOGGED_IN'
 
+@login_required(login_url='/secretsmanager/login/')
 def addSecret(request):
     if request.method == 'POST':
         new_secret = Secret(
@@ -27,12 +32,16 @@ def addSecret(request):
         new_secret.save()
     return redirect('/secretsmanager/')
 
+#@login_required(login_url='/secretsmanager/login/')
 def secretView(request, id):
     if request.method == 'GET':
+        # HERE IS THE FIX:
         #secret = Secret.objects.get(id=id)
-        #if secret.classification != getClearanceLevel(request.user['id']):
+        #if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
         #    return redirect('/secretsmanager/')
         #context = {'secret': secret}
+
+        # VULNERABLE CODE
         conn = sqlite3.connect('db.sqlite3')
         cursor = conn.cursor()
         sql = 'SELECT * FROM secretsmanager_secret WHERE id='+str(id)+';'
@@ -43,6 +52,7 @@ def secretView(request, id):
             secret = r[2]
         )
         context = {'secret': secret_object}
+
     return render(request, 'secret.html', context)
 
 def newSecretView(request):
@@ -63,6 +73,7 @@ def loginView(request):
             login(request, user)
             return redirect('/secretsmanager/')
         else:
+            print('Login failed!')
             return redirect('/secretsmanager/')
 
 
