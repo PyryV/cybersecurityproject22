@@ -3,6 +3,9 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from secretsmanager.models import Secret, UserClearanceLevel
+import logging
+
+logger = logging.getLogger(__name__)
 
 def getSecrets(user):
     print(user.id)
@@ -17,7 +20,6 @@ def getSecrets(user):
 def getClearanceLevel(user_id):
     if user_id is not None:
         cl = UserClearanceLevel.objects.get(user_id=user_id)
-        print(cl.clearanceLevel)
         return cl.clearanceLevel
     else: return 'USER_IS_NOT_LOGGED_IN'
 
@@ -32,27 +34,29 @@ def addSecret(request):
         new_secret.save()
     return redirect('/secretsmanager/')
 
-#@login_required(login_url='/secretsmanager/login/')
+@login_required(login_url='/secretsmanager/login/')
 def secretView(request, id):
     if request.method == 'GET':
         # HERE IS THE FIX:
-        #secret = Secret.objects.get(id=id)
-        #if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
-        #    return redirect('/secretsmanager/')
-        #context = {'secret': secret}
+        secret = Secret.objects.get(id=id)
+        if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
+            logger.warning('User '+str(request.user.id)+' tried to access secret '+str(id))    
+            return redirect('/secretsmanager/')
+        context = {'secret': secret}
 
         # VULNERABLE CODE
-        conn = sqlite3.connect('db.sqlite3')
-        cursor = conn.cursor()
-        sql = 'SELECT * FROM secretsmanager_secret WHERE id='+str(id)+';'
-        r = cursor.execute(sql).fetchall()[0]
-        secret_object = Secret(
-            title = r[0],
-            classification = r[1],
-            secret = r[2]
-        )
-        context = {'secret': secret_object}
+        #conn = sqlite3.connect('db.sqlite3')
+        #cursor = conn.cursor()
+        #sql = 'SELECT * FROM secretsmanager_secret WHERE id='+str(id)+';'
+        #r = cursor.execute(sql).fetchall()[0]
+        #secret_object = Secret(
+        #    title = r[0],
+        #    classification = r[1],
+        #    secret = r[2]
+        #)
+        #context = {'secret': secret_object}
 
+    logger.info('User '+str(request.user.id)+' accessed secret '+str(id))
     return render(request, 'secret.html', context)
 
 def newSecretView(request):
@@ -71,9 +75,11 @@ def loginView(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            logger.info('User '+str(user.pk)+' logged in successfully!')
             return redirect('/secretsmanager/')
         else:
             print('Login failed!')
+            logger.info("Login failed!")
             return redirect('/secretsmanager/')
 
 
