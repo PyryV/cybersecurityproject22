@@ -39,23 +39,23 @@ def addSecret(request):
 def secretView(request, id):
     if request.method == 'GET':
         # HERE IS THE FIX:
-        secret = Secret.objects.get(id=id)
-        if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
-            #FIX LOGGING: logger.warning('User '+str(request.user.id)+' tried to access secret '+str(id))    
-            return redirect('/secretsmanager/')
-        context = {'secret': secret}
+        # secret = Secret.objects.get(id=id)
+        # if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
+        #     #FIX LOGGING: logger.warning('User '+str(request.user.id)+' tried to access secret '+str(id))    
+        #     return redirect('/secretsmanager/')
+        # context = {'secret': secret}
 
         # VULNERABLE CODE
-        #conn = sqlite3.connect('db.sqlite3')
-        #cursor = conn.cursor()
-        #sql = 'SELECT * FROM secretsmanager_secret WHERE id='+str(id)+';'
-        #r = cursor.execute(sql).fetchall()[0]
-        #secret_object = Secret(
-        #    title = r[0],
-        #    classification = r[1],
-        #    secret = r[2]
-        #)
-        #context = {'secret': secret_object}
+        conn = sqlite3.connect('db.sqlite3')
+        cursor = conn.cursor()
+        sql = 'SELECT * FROM secretsmanager_secret WHERE id='+str(id)+';'
+        r = cursor.execute(sql).fetchall()[0]
+        secret_object = Secret(
+            title = r[0],
+            classification = r[1],
+            secret = r[2]
+        )
+        context = {'secret': secret_object}
 
     #FIX LOGGING: logger.info('User '+str(request.user.id)+' accessed secret '+str(id))
     return render(request, 'secret.html', context)
