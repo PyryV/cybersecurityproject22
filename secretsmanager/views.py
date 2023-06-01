@@ -35,7 +35,7 @@ def addSecret(request):
         new_secret.save()
     return redirect('/secretsmanager/')
 
-@login_required(login_url='/secretsmanager/login/')
+#@login_required(login_url='/secretsmanager/login/')
 def secretView(request, id):
     if request.method == 'GET':
         # HERE IS THE FIX:
