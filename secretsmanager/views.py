@@ -3,9 +3,10 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from secretsmanager.models import Secret, UserClearanceLevel
-import logging
-
-logger = logging.getLogger(__name__)
+#FIX LOGGING:
+#import logging
+#
+#logger = logging.getLogger(__name__)
 
 def getSecrets(user):
     print(user.id)
@@ -40,7 +41,7 @@ def secretView(request, id):
         # HERE IS THE FIX:
         secret = Secret.objects.get(id=id)
         if (secret.classification != getClearanceLevel(request.user.id)) & (secret.classification != 'PUBLIC'):
-            logger.warning('User '+str(request.user.id)+' tried to access secret '+str(id))    
+            #FIX LOGGING: logger.warning('User '+str(request.user.id)+' tried to access secret '+str(id))    
             return redirect('/secretsmanager/')
         context = {'secret': secret}
 
@@ -56,7 +57,7 @@ def secretView(request, id):
         #)
         #context = {'secret': secret_object}
 
-    logger.info('User '+str(request.user.id)+' accessed secret '+str(id))
+    #FIX LOGGING: logger.info('User '+str(request.user.id)+' accessed secret '+str(id))
     return render(request, 'secret.html', context)
 
 def newSecretView(request):
@@ -75,11 +76,11 @@ def loginView(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            logger.info('User '+str(user.pk)+' logged in successfully!')
+            #FIX LOGGING: logger.info('User '+str(user.pk)+' logged in successfully!')
             return redirect('/secretsmanager/')
         else:
             print('Login failed!')
-            logger.info("Login failed!")
+            #FIX LOGGING: logger.info("Login failed!")
             return redirect('/secretsmanager/')
 
 
